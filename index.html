@@ -237,6 +237,11 @@
             .question-text { font-size: 1.3em; }
             .answer { padding: 16px; font-size: 1em; }
         }
+
+        /* Скрытый аудио‑элемент */
+        audio#bgMusic {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -269,6 +274,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Фоновая музыка -->
+    <audio id="bgMusic" src="bg.mp3" loop></audio>
 
     <script>
         const QUIZ_DATA = {
@@ -418,6 +426,7 @@
 
         let currentQuestion = 0;
         let scores = {};
+        let musicStarted = false;
 
         const screens = {
             welcome: document.getElementById('welcomeScreen'),
@@ -435,12 +444,23 @@
             resultName: document.getElementById('resultName'),
             resultImage: document.getElementById('resultImage'),
             resultDescription: document.getElementById('resultDescription'),
-            againBtn: document.getElementById('againBtn')
+            againBtn: document.getElementById('againBtn'),
+            bgMusic: document.getElementById('bgMusic')
         };
 
         function showScreen(screenName) {
             Object.values(screens).forEach(screen => screen.classList.remove('active'));
             screens[screenName].classList.add('active');
+        }
+
+        function startMusicOnce() {
+            if (!musicStarted) {
+                musicStarted = true;
+                elements.bgMusic.volume = 0.6; // можно подстроить громкость
+                elements.bgMusic.play().catch(() => {
+                    // если браузер заблокировал автоплей, музыка запустится при следующем клике
+                });
+            }
         }
 
         function init() {
@@ -453,8 +473,14 @@
                 scores[result.key] = 0;
             });
 
-            elements.startBtn.addEventListener('click', startQuiz);
-            elements.againBtn.addEventListener('click', restartQuiz);
+            elements.startBtn.addEventListener('click', () => {
+                startMusicOnce();
+                startQuiz();
+            });
+
+            elements.againBtn.addEventListener('click', () => {
+                showScreen('welcome');
+            });
         }
 
         function startQuiz() {
@@ -505,10 +531,6 @@
             elements.resultImage.src = result.imageUrl;
             elements.resultDescription.textContent = result.description;
             showScreen('result');
-        }
-
-        function restartQuiz() {
-            showScreen('welcome');
         }
 
         init();
